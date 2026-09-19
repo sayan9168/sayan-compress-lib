@@ -65,3 +65,4 @@ dist/
 # Gradle
 .gradle/
 ```.next/
+.next/
