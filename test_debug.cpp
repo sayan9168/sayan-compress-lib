@@ -1,52 +1,44 @@
-#include "huffman.hpp"
+#include "advanced_compression_engine.hpp"
 #include <iostream>
-#include <cstring>
+#include <vector>
 
 using namespace compress;
 
 int main() {
-    // Simulate what happens with single byte 42
-    FrequencyCounter counter;
-    std::vector<uint8_t> data = {42};
-    counter.count(data.data(), data.size());
+    std::vector<uint8_t> testData = {'H', 'e', 'l', 'l', 'o', ',', ' ', 'W', 'o', 'r', 'l', 'd', '!'};
     
-    const auto& freqs = counter.frequencies();
-    std::cout << "Frequencies: ";
-    int nonZero = 0;
-    for (size_t i = 0; i < freqs.size(); ++i) {
-        if (freqs[i] > 0) {
-            std::cout << "[" << i << "=" << freqs[i] << "] ";
-            ++nonZero;
+    CompressionConfig config;
+    config.enableCRC = false;
+    config.enableMetadata = false;
+    
+    AdvancedCompressorEngine engine(config);
+    
+    std::vector<uint8_t> compressedData;
+    std::vector<uint8_t> decompressedData;
+    FileMetadata metadata;
+    
+    auto stats = engine.compressData(testData, compressedData, metadata);
+    std::cout << "Original size: " << testData.size() << "\n";
+    std::cout << "Compressed size: " << compressedData.size() << "\n";
+    
+    bool success = engine.decompressData(compressedData, decompressedData);
+    std::cout << "Decompress returned: " << (success ? "true" : "false") << "\n";
+    std::cout << "Decompressed size: " << decompressedData.size() << "\n";
+    
+    if (decompressedData.size() == testData.size()) {
+        bool match = true;
+        for (size_t i = 0; i < testData.size(); ++i) {
+            if (testData[i] != decompressedData[i]) {
+                std::cout << "Mismatch at " << i << ": " << testData[i] << " vs " << decompressedData[i] << "\n";
+                match = false;
+            }
+        }
+        if (match) {
+            std::cout << "SUCCESS: Data matches!\n";
+            return 0;
         }
     }
-    std::cout << "\nNon-zero symbols: " << nonZero << std::endl;
     
-    HuffmanTree tree;
-    tree.buildFromFrequencies(freqs.data(), freqs.size());
-    
-    std::cout << "Tree valid: " << tree.isValid() << std::endl;
-    std::cout << "Tree canDecode: " << tree.canDecode() << std::endl;
-    std::cout << "Symbol count: " << tree.symbolCount() << std::endl;
-    
-    auto codeLengths = tree.getCodeLengths(512);
-    std::cout << "Code lengths (non-zero): ";
-    for (size_t i = 0; i < codeLengths.size(); ++i) {
-        if (codeLengths[i] > 0) {
-            std::cout << "[" << i << "=" << (int)codeLengths[i] << "] ";
-        }
-    }
-    std::cout << std::endl;
-    
-    // Now try to rebuild from code lengths
-    HuffmanTree tree2;
-    tree2.buildFromCodeLengths(codeLengths.data(), codeLengths.size());
-    
-    std::cout << "Rebuilt tree canDecode: " << tree2.canDecode() << std::endl;
-    std::cout << "Rebuilt tree symbol count: " << tree2.symbolCount() << std::endl;
-    
-    // Try to decode
-    auto code = tree2.getCode(42);
-    std::cout << "Code for symbol 42: code=" << code.code << ", length=" << (int)code.length << std::endl;
-    
-    return 0;
+    std::cout << "FAILED\n";
+    return 1;
 }

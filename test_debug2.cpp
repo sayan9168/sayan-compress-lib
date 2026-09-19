@@ -1,47 +1,48 @@
 #include "compressor_engine.hpp"
 #include <iostream>
+#include <vector>
 #include <sstream>
 
 using namespace compress;
 
 int main() {
-    // Test single byte - debug step by step
-    std::vector<uint8_t> singleByte = {42};
+    std::vector<uint8_t> testData = {'H', 'e', 'l', 'l', 'o'};
     
     CompressorEngine engine;
     
-    // Compress
-    std::istringstream input(std::string(singleByte.begin(), singleByte.end()));
+    // Manual compress
+    std::string inputStr(testData.begin(), testData.end());
+    std::istringstream input(inputStr);
     std::ostringstream compressedOutput;
     
     auto stats = engine.compress(input, compressedOutput);
+    std::cout << "Original: " << testData.size() << ", Compressed: " << compressedOutput.str().size() << "\n";
     
-    const std::string& compressedStr = compressedOutput.str();
-    std::cout << "Compressed size: " << compressedStr.size() << " bytes" << std::endl;
+    // Manual decompress
+    std::string compressedStr = compressedOutput.str();
+    std::istringstream compressedInput(compressedStr);
+    std::ostringstream decompressedOutput;
     
-    // Parse header manually
-    std::cout << "\nHeader analysis:" << std::endl;
-    std::cout << "Magic: " << std::hex << (int)(uint8_t)compressedStr[0] << " " << (int)(uint8_t)compressedStr[1] << std::dec << std::endl;
+    bool success = engine.decompress(compressedInput, decompressedOutput);
+    std::cout << "Decompress returned: " << (success ? "true" : "false") << "\n";
     
-    uint64_t origSize = 0;
-    for (int i = 0; i < 8; ++i) {
-        origSize |= ((uint64_t)(uint8_t)compressedStr[2+i]) << (i*8);
+    std::string result = decompressedOutput.str();
+    std::cout << "Decompressed size: " << result.size() << "\n";
+    
+    if (result.size() == testData.size()) {
+        bool match = true;
+        for (size_t i = 0; i < testData.size(); ++i) {
+            if ((uint8_t)result[i] != testData[i]) {
+                std::cout << "Mismatch at " << i << ": " << (uint8_t)result[i] << " vs " << (int)testData[i] << "\n";
+                match = false;
+            }
+        }
+        if (match) {
+            std::cout << "SUCCESS!\n";
+            return 0;
+        }
     }
-    std::cout << "Original size: " << origSize << std::endl;
     
-    std::cout << "Symbol range byte: " << (int)(uint8_t)compressedStr[10] << std::endl;
-    
-    // Find code lengths
-    size_t pos = 11;
-    std::cout << "Code length entries:" << std::endl;
-    while (pos < compressedStr.size() && (uint8_t)compressedStr[pos] != 0xFF) {
-        uint8_t symbol = (uint8_t)compressedStr[pos];
-        uint8_t length = (uint8_t)compressedStr[pos+1];
-        std::cout << "  Symbol " << (int)symbol << ": length=" << (int)length << std::endl;
-        pos += 2;
-    }
-    std::cout << "Sentinel at pos " << pos << std::endl;
-    std::cout << "Remaining bits: " << (compressedStr.size() - pos - 1) << " bytes" << std::endl;
-    
-    return 0;
+    std::cout << "FAILED\n";
+    return 1;
 }

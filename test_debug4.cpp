@@ -1,44 +1,50 @@
-#include "compressor_engine.hpp"
+#include "advanced_compression_engine.hpp"
 #include <iostream>
-#include <sstream>
+#include <vector>
 
 using namespace compress;
 
 int main() {
-    std::string testStr = "Hello, World! Hello, World!";
-    std::vector<uint8_t> testData(testStr.begin(), testStr.end());
-    
-    CompressorEngine engine;
-    
-    // First just do LZ77 and see what tokens we get
-    LZ77Encoder lzEncoder;
-    auto tokens = lzEncoder.encode(testData.data(), testData.size());
-    
-    std::cout << "LZ77 Tokens:" << std::endl;
-    for (size_t i = 0; i < tokens.size(); ++i) {
-        const auto& t = tokens[i];
-        if (t.isLiteral()) {
-            std::cout << "  [" << i << "] Literal: '" << (char)t.literal << "' (" << (int)t.literal << ")" << std::endl;
-        } else {
-            std::cout << "  [" << i << "] Match: offset=" << t.offset << ", length=" << (int)t.length << ", literal=" << (int)t.literal << std::endl;
-        }
+    // Small data to use serial path
+    std::vector<uint8_t> testData(1000);
+    for (size_t i = 0; i < testData.size(); ++i) {
+        testData[i] = static_cast<uint8_t>(i % 256);
     }
     
-    // Count frequencies
-    FrequencyCounter counter;
-    counter.countTokens(tokens);
-    const auto& freqs = counter.frequencies();
+    CompressionConfig config;
+    config.enableCRC = false;
+    config.enableMetadata = false;
+    config.blockSize = 64 * 1024;
     
-    std::cout << "\nFrequencies (non-zero):" << std::endl;
-    for (size_t i = 0; i < freqs.size(); ++i) {
-        if (freqs[i] > 0) {
-            if (i < 256) {
-                std::cout << "  [" << i << "] '" << (char)i << "': " << freqs[i] << std::endl;
-            } else {
-                std::cout << "  [" << i << "] LengthCode(" << (i-256+3) << "): " << freqs[i] << std::endl;
+    AdvancedCompressorEngine engine(config);
+    
+    std::vector<uint8_t> compressedData;
+    std::vector<uint8_t> decompressedData;
+    FileMetadata metadata;
+    
+    auto stats = engine.compressData(testData, compressedData, metadata);
+    std::cout << "Original size: " << testData.size() << "\n";
+    std::cout << "Compressed size: " << compressedData.size() << "\n";
+    
+    bool success = engine.decompressData(compressedData, decompressedData);
+    std::cout << "Decompress returned: " << (success ? "true" : "false") << "\n";
+    std::cout << "Decompressed size: " << decompressedData.size() << "\n";
+    
+    if (decompressedData.size() == testData.size()) {
+        bool match = true;
+        for (size_t i = 0; i < testData.size(); ++i) {
+            if (testData[i] != decompressedData[i]) {
+                std::cout << "Mismatch at " << i << ": " << (int)testData[i] << " vs " << (int)decompressedData[i] << "\n";
+                match = false;
+                break;
             }
         }
+        if (match) {
+            std::cout << "SUCCESS!\n";
+            return 0;
+        }
     }
     
-    return 0;
+    std::cout << "FAILED\n";
+    return 1;
 }

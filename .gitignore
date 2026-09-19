@@ -1,17 +1,67 @@
 ```
-# Compiled and binary files
+# Compiled and build artifacts
 *.o
 *.obj
 *.out
-test_debug2
-test_debug3
-test_debug4
-test_simple
-test_single
-compressor
-```node_modules/
-.next/
+compression_engine
+test_basic
+test_debug
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 dist/
 build/
+target/
+.venv/
+venv/
+.env
+.env.local
+*.env.*
+
+# Logs and temp files
 *.log
-node_modules/
+*.tmp
+*.swp
+*.swo
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg-info/
+.eggs/
+
+# Build directories
+build/
+dist/
+*.egg-info/
+
+# MyPy
+.mypy_cache/
+.pytest_cache/
+
+# Gradle
+.gradle/
+```.next/
