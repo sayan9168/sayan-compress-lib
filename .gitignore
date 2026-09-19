@@ -2,31 +2,30 @@
 # Compiled and build artifacts
 *.o
 *.obj
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
 *.out
-compression_engine
-test_basic
-test_debug
+
+# Build directories
+build/
+cmake-build-*/
+Makefile
 
 # Dependencies
-node_modules/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-dist/
-build/
-target/
-.venv/
-venv/
-.env
-.env.local
-*.env.*
+vendor/
 
 # Logs and temp files
 *.log
 *.tmp
 *.swp
-*.swo
+
+# Environment
+.env
+.env.local
+*.env.*
 
 # Editors
 .vscode/
@@ -43,26 +42,8 @@ coverage/
 htmlcov/
 .coverage
 
-# Python specific
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg-info/
-.eggs/
-
-# Build directories
-build/
-dist/
-*.egg-info/
-
-# MyPy
-.mypy_cache/
-.pytest_cache/
-
-# Gradle
-.gradle/
-```.next/
+# Compression artifacts
+compress_engine
+```node_modules/
 .next/
+dist/
