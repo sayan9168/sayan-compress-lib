@@ -1,50 +1,28 @@
 ```
-# Compiled and build artifacts
+# Compiled and binary files
 *.o
 *.obj
 *.a
 *.so
-*.dylib
 *.dll
 *.exe
 *.out
 
-# Build directories
-build/
-cmake-build-*/
-Makefile
-
 # Dependencies
-vendor/
+build/
+dist/
+*.egg-info/
 
 # Logs and temp files
 *.log
 *.tmp
-*.swp
+
+# Editors
+.vscode/
+.idea/
 
 # Environment
 .env
 .env.local
 *.env.*
-
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS specific
-.DS_Store
-Thumbs.db
-
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Compression artifacts
-compress_engine
-```node_modules/
-.next/
-dist/
-node_modules/
+```
